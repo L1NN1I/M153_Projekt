@@ -98,6 +98,12 @@ GO
 ------------- Create Stored Procedures/Functions -------------
 --------------------------------------------------------------
 
+DROP PROCEDURE IF EXISTS dbo.GetRentalsByCustomer;
+DROP PROCEDURE IF EXISTS dbo.GetTotalRentalsByCustomer;
+DROP FUNCTION IF EXISTS dbo.CalculateRentalPrice;
+DROP FUNCTION IF EXISTS dbo.GetAverageRentalDuration;
+GO
+
 -- Stored Procedure 1: Get all rentals for a specific customer
 CREATE PROCEDURE dbo.GetRentalsByCustomer
     @CustomerID INT
