@@ -180,11 +180,6 @@ BEGIN
     FROM dbo.Fahrzeug
     WHERE FahrzeugID = @FahrzeugID;
 
-    IF (@PricePerTag IS NULL)
-    BEGIN
-        RETURN NULL; -- Wert für leere Ergebnisse
-    END
-
     RETURN @PricePerTag;
 END
 GO
