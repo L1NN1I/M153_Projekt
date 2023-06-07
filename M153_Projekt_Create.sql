@@ -154,7 +154,7 @@ BEGIN
 
     IF (@TotalVermietungen = 0)
     BEGIN
-        RETURN -2; -- Fehlercode für leere Ergebnisse
+        RETURN NULL; -- Fehlercode für leere Ergebnisse
     END
 
     RETURN @TotalVermietungen;
@@ -173,7 +173,7 @@ BEGIN
     -- Fehlerbehandlung für leere oder falsche Argumente
     IF (@FahrzeugID IS NULL)
     BEGIN
-        RETURN NULL; -- Wert für leere Argumente
+        RETURN -1; -- Wert für leere Argumente
     END
 
     SELECT @PricePerTag = PreisProTag
