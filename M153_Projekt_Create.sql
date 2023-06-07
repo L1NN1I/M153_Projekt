@@ -70,7 +70,8 @@ CREATE PROCEDURE sp_InsertFahrzeug
     @Marke NVARCHAR(50),
     @Modell NVARCHAR(50),
     @Baujahr INT,
-    @PreisProTag DECIMAL(10, 2)
+    @PreisProTag DECIMAL(10, 2),
+    @ReturnValue INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -79,7 +80,8 @@ BEGIN
     IF (@Marke IS NULL OR @Modell IS NULL OR @Baujahr IS NULL OR @PreisProTag IS NULL)
     BEGIN
         RAISERROR('Alle Argumente müssen angegeben werden.', 11, 1);
-        RETURN -1;
+        SET @ReturnValue = -1;
+        RETURN;
     END
 
     BEGIN TRY
@@ -87,7 +89,8 @@ BEGIN
         VALUES (@Marke, @Modell, @Baujahr, @PreisProTag);
 
         -- Rückgabe der Anzahl der eingefügten Datensätze
-        RETURN @@ROWCOUNT;
+        SET @ReturnValue = @@ROWCOUNT;
+        RETURN;
     END TRY
     BEGIN CATCH
         -- Fehlermeldung generieren
@@ -96,7 +99,8 @@ BEGIN
         DECLARE @ErrorState INT = ERROR_STATE();
 
         RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
-        RETURN -1;
+        SET @ReturnValue = -1;
+        RETURN;
     END CATCH
 END
 GO
@@ -160,7 +164,6 @@ BEGIN
     RETURN @TotalVermietungen;
 END
 GO
-
 
 -- Stored Function 2:
 CREATE FUNCTION GetFahrzeugPricePerTag
