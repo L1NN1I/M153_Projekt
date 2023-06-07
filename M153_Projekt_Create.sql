@@ -65,17 +65,41 @@ DROP FUNCTION IF EXISTS dbo.CalculateRentalPrice;
 DROP FUNCTION IF EXISTS dbo.GetAverageRentalDuration;
 GO
 
--- Stored Procedure 1: Get all rentals for a specific customer
-CREATE PROCEDURE dbo.GetRentalsByCustomer
-    @CustomerID INT
+-- Stored Procedure 1: Add new vehicle to table
+CREATE PROCEDURE InsertFahrzeug
+    @Marke NVARCHAR(50),
+    @Modell NVARCHAR(50),
+    @Baujahr INT,
+    @PreisProTag DECIMAL(10, 2)
 AS
 BEGIN
-    SELECT v.VermietungID, f.Marke, f.Modell, v.Mietbeginn, v.Mietende
-    FROM dbo.Vermietung v
-    INNER JOIN dbo.Fahrzeug f ON v.fk_FahrzeugID = f.FahrzeugID
-    WHERE v.fk_KundeID = @CustomerID
+    SET NOCOUNT ON;
+
+    -- Fehlerbehandlung für leere oder falsche Argumente
+    IF (@Marke IS NULL OR @Modell IS NULL OR @Baujahr IS NULL OR @PreisProTag IS NULL)
+    BEGIN
+        RAISERROR('Alle Argumente müssen angegeben werden.', 11, 1);
+        RETURN -1;
+    END
+
+    BEGIN TRY
+        INSERT INTO dbo.Fahrzeug (Marke, Modell, Baujahr, PreisProTag)
+        VALUES (@Marke, @Modell, @Baujahr, @PreisProTag);
+
+        -- Rückgabe der Anzahl der eingefügten Datensätze
+        RETURN @@ROWCOUNT;
+    END TRY
+    BEGIN CATCH
+        -- Fehlermeldung generieren
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+        RETURN -1;
+    END CATCH
 END
-GO
+
 
 -- Stored Procedure 2: Get the total number of rentals for each customer
 CREATE PROCEDURE dbo.GetTotalRentalsByCustomer
