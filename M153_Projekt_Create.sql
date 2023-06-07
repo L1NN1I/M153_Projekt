@@ -59,8 +59,8 @@ GO
 ------------- Create Stored Procedures/Functions -------------
 --------------------------------------------------------------
 
-DROP PROCEDURE IF EXISTS dbo.GetRentalsByCustomer;
-DROP PROCEDURE IF EXISTS dbo.GetTotalRentalsByCustomer;
+DROP PROCEDURE IF EXISTS dbo.InsertFahrzeug;
+DROP PROCEDURE IF EXISTS dbo.DeleteKunde;
 DROP FUNCTION IF EXISTS dbo.CalculateRentalPrice;
 DROP FUNCTION IF EXISTS dbo.GetAverageRentalDuration;
 GO
@@ -99,20 +99,42 @@ BEGIN
         RETURN -1;
     END CATCH
 END
+GO
 
-
--- Stored Procedure 2: Get the total number of rentals for each customer
-CREATE PROCEDURE dbo.GetTotalRentalsByCustomer
+-- Stored Procedure 2: Delete a customer/rental with id
+CREATE PROCEDURE DeleteKunde
+    @KundeID INT
 AS
 BEGIN
-    SELECT k.KundeID, k.Vorname, k.Nachname, COUNT(*) AS TotalRentals
-    FROM dbo.Kunde k
-    LEFT JOIN dbo.Vermietung v ON k.KundeID = v.fk_KundeID
-    GROUP BY k.KundeID, k.Vorname, k.Nachname
+    SET NOCOUNT ON;
+
+    -- Fehlerbehandlung für leere oder falsche Argumente
+    IF (@KundeID IS NULL)
+    BEGIN
+        RAISERROR('Die Kunden-ID muss angegeben werden.', 16, 1);
+        RETURN -1;
+    END
+
+    BEGIN TRY
+        DELETE FROM dbo.Kunde
+        WHERE KundeID = @KundeID;
+
+        -- Rückgabe der Anzahl der gelöschten Datensätze
+        RETURN @@ROWCOUNT;
+    END TRY
+    BEGIN CATCH
+        -- Fehlermeldung generieren
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+        RETURN -1;
+    END CATCH
 END
 GO
 
--- Stored Function 1: Calculate the total price for a rental
+-- Stored Function 1: 
 CREATE FUNCTION dbo.CalculateRentalPrice
 (
     @RentalID INT
