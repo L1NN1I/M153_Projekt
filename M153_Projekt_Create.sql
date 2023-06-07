@@ -187,3 +187,4 @@ BEGIN
 
     RETURN @PricePerTag;
 END
+GO
