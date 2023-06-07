@@ -59,14 +59,14 @@ GO
 ------------- Create Stored Procedures/Functions -------------
 --------------------------------------------------------------
 
-DROP PROCEDURE IF EXISTS dbo.InsertFahrzeug;
-DROP PROCEDURE IF EXISTS dbo.DeleteKunde;
-DROP FUNCTION IF EXISTS dbo.CalculateRentalPrice;
-DROP FUNCTION IF EXISTS dbo.GetAverageRentalDuration;
+DROP PROCEDURE IF EXISTS dbo.sp_InsertFahrzeug;
+DROP PROCEDURE IF EXISTS dbo.sp_DeleteKunde;
+DROP FUNCTION IF EXISTS dbo.GetTotalVermietungenForKunde;
+DROP FUNCTION IF EXISTS dbo.GetFahrzeugPricePerTag;
 GO
 
 -- Stored Procedure 1: Add new vehicle to table
-CREATE PROCEDURE InsertFahrzeug
+CREATE PROCEDURE sp_InsertFahrzeug
     @Marke NVARCHAR(50),
     @Modell NVARCHAR(50),
     @Baujahr INT,
@@ -102,7 +102,7 @@ END
 GO
 
 -- Stored Procedure 2: Delete a customer/rental with id
-CREATE PROCEDURE DeleteKunde
+CREATE PROCEDURE sp_DeleteKunde
     @KundeID INT
 AS
 BEGIN
@@ -134,35 +134,56 @@ BEGIN
 END
 GO
 
--- Stored Function 1: 
-CREATE FUNCTION dbo.CalculateRentalPrice
-(
-    @RentalID INT
-)
-RETURNS DECIMAL(10, 2)
+-- Stored Function 1:  
+CREATE FUNCTION GetTotalVermietungenForKunde
+    (@KundeID INT)
+RETURNS INT
 AS
 BEGIN
-    DECLARE @Price DECIMAL(10, 2)
-    SELECT @Price = SUM(f.PreisProTag)
-    FROM dbo.Vermietung v
-    INNER JOIN dbo.Fahrzeug f ON v.fk_FahrzeugID = f.FahrzeugID
-    WHERE v.VermietungID = @RentalID
-    RETURN @Price
+    DECLARE @TotalVermietungen INT;
+
+    -- Fehlerbehandlung für leere oder falsche Argumente
+    IF (@KundeID IS NULL)
+    BEGIN
+        RETURN -1; -- Fehlercode für leere Argumente
+    END
+
+    SELECT @TotalVermietungen = COUNT(*)
+    FROM dbo.Vermietung
+    WHERE fk_KundeID = @KundeID;
+
+    IF (@TotalVermietungen = 0)
+    BEGIN
+        RETURN -2; -- Fehlercode für leere Ergebnisse
+    END
+
+    RETURN @TotalVermietungen;
 END
 GO
 
--- Stored Function 2: Get the average rental duration in days
-CREATE FUNCTION dbo.GetAverageRentalDuration
-(
-    @CustomerID INT
-)
+
+-- Stored Function 2:
+CREATE FUNCTION GetFahrzeugPricePerTag
+    (@FahrzeugID INT)
 RETURNS DECIMAL(10, 2)
 AS
 BEGIN
-    DECLARE @AverageDuration DECIMAL(10, 2)
-    SELECT @AverageDuration = AVG(DATEDIFF(DAY, Mietbeginn, Mietende))
-    FROM dbo.Vermietung
-    WHERE fk_KundeID = @CustomerID
-    RETURN @AverageDuration
+    DECLARE @PricePerTag DECIMAL(10, 2);
+
+    -- Fehlerbehandlung für leere oder falsche Argumente
+    IF (@FahrzeugID IS NULL)
+    BEGIN
+        RETURN NULL; -- Wert für leere Argumente
+    END
+
+    SELECT @PricePerTag = PreisProTag
+    FROM dbo.Fahrzeug
+    WHERE FahrzeugID = @FahrzeugID;
+
+    IF (@PricePerTag IS NULL)
+    BEGIN
+        RETURN NULL; -- Wert für leere Ergebnisse
+    END
+
+    RETURN @PricePerTag;
 END
-GO
