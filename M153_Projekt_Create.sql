@@ -107,7 +107,8 @@ GO
 
 -- Stored Procedure 2: Delete a customer/rental with id
 CREATE PROCEDURE sp_DeleteKunde
-    @KundeID INT
+    @KundeID INT,
+    @ReturnValue INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -116,15 +117,26 @@ BEGIN
     IF (@KundeID IS NULL)
     BEGIN
         RAISERROR('Die Kunden-ID muss angegeben werden.', 16, 1);
-        RETURN -1;
+        SET @ReturnValue = -1;
+        RETURN;
     END
 
     BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Alle zugehörigen Vermietungen löschen
+        DELETE FROM dbo.Vermietung
+        WHERE fk_KundeID = @KundeID;
+
+        -- Kunden löschen
         DELETE FROM dbo.Kunde
         WHERE KundeID = @KundeID;
 
         -- Rückgabe der Anzahl der gelöschten Datensätze
-        RETURN @@ROWCOUNT;
+        SET @ReturnValue = @@ROWCOUNT;
+        
+        COMMIT TRANSACTION;
+        RETURN;
     END TRY
     BEGIN CATCH
         -- Fehlermeldung generieren
@@ -132,8 +144,10 @@ BEGIN
         DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
         DECLARE @ErrorState INT = ERROR_STATE();
 
+        ROLLBACK TRANSACTION;
         RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
-        RETURN -1;
+        SET @ReturnValue = -1;
+        RETURN;
     END CATCH
 END
 GO
