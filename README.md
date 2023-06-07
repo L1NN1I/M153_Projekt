@@ -1,10 +1,10 @@
 # M153_Projekt von Linus und Basil
 
 ER-Diagramm
-![image](https://user-images.githubusercontent.com/95078140/236476119-28c51cab-161a-44fe-8541-98a461d74c14.png)
-
+![image](https://github.com/L1NN1I/M153_Projekt/assets/95078140/5252cb33-b49b-43e1-8384-f98e7524b2ca)
 
 Relationales Modell der DB
-![image](https://user-images.githubusercontent.com/95078140/236475906-538c153e-dc03-4163-86f4-9a3099536a05.png)
+![image](https://github.com/L1NN1I/M153_Projekt/assets/95078140/c7c5fa26-2eac-4a7a-8389-61e9ac0592bf)
 
+Diagramm mit Beschreibung der Felder: https://drawsql.app/teams/autoverleih/diagrams/autoverleih/embed
 
